@@ -2,41 +2,6 @@
 
 #include <string>
 
-namespace {
-
-Tower makeTower(TowerType type, Position position) {
-    Tower tower;
-    tower.position = position;
-    tower.type = type;
-
-    switch (type) {
-    case TowerType::Basic:
-        tower.damage = 10;
-        tower.range = 2;
-        tower.cost = 50;
-        break;
-    case TowerType::Fast:
-        tower.damage = 6;
-        tower.range = 2;
-        tower.cost = 60;
-        break;
-    case TowerType::Heavy:
-        tower.damage = 30;
-        tower.range = 3;
-        tower.cost = 120;
-        break;
-    }
-    return tower;
-}
-
-bool inRange(Position a, Position b, int range) {
-    const int dx = a.x - b.x;
-    const int dy = a.y - b.y;
-    return dx * dx + dy * dy <= range * range;
-}
-
-}
-
 void Engine::start() {
     state_ = GameState{};
 
@@ -49,28 +14,14 @@ void Engine::start() {
     running_ = true;
 }
 
-bool Engine::isOnPath(Position position) const {
-    for (const Position& p : state_.path) {
-        if (p.x == position.x && p.y == position.y) return true;
-    }
-    return false;
-}
-
-bool Engine::isOccupied(Position position) const {
-    for (const Tower& tower : state_.towers) {
-        if (tower.position.x == position.x && tower.position.y == position.y) return true;
-    }
-    return false;
-}
-
 bool Engine::buildTower(TowerType type, Position position) {
-    if (position.x < 0 || position.x >= kMapWidth || position.y < 0 || position.y >= kMapHeight) return false;
-    if (isOnPath(position) || isOccupied(position)) return false;
+    if (!position.isInsideMap()) return false;
+    if (state_.isPositionOnPath(position) || state_.isPositionOccupied(position)) return false;
 
-    const Tower tower = makeTower(type, position);
-    if (state_.credits < tower.cost) return false;
+    const Tower tower = Tower::create(type, position);
+    if (!state_.canAfford(tower.cost)) return false;
 
-    state_.credits -= tower.cost;
+    state_.spendCredits(tower.cost);
     state_.towers.push_back(tower);
     return true;
 }
@@ -86,10 +37,11 @@ bool Engine::startWave() {
 void Engine::update() {
     const int lastIndex = static_cast<int>(state_.path.size()) - 1;
 
+    // 1. Enemies move along the path; the ones that reach the server damage it.
     std::vector<Enemy> stillWalking;
     for (Enemy enemy : state_.enemies) {
-        enemy.pathIndex += enemy.speed;
-        if (enemy.pathIndex >= lastIndex) {
+        enemy.advance();
+        if (enemy.hasReachedEnd(lastIndex)) {
             --state_.baseHealth;
         }
         else {
@@ -98,38 +50,39 @@ void Engine::update() {
     }
     state_.enemies = stillWalking;
 
+    // 2. The wave releases one new enemy per step.
     if (enemiesToSpawn_ > 0) {
-        Enemy enemy;
-        enemy.health = 30 + 10 * state_.wave;
-        enemy.reward = 20;
-        state_.enemies.push_back(enemy);
+        state_.enemies.push_back(Enemy::spawnForWave(state_.wave));
         --enemiesToSpawn_;
     }
 
+    // 3. Towers shoot the enemy closest to the server among those in range.
     for (const Tower& tower : state_.towers) {
-        const int shots = (tower.type == TowerType::Fast) ? 2 : 1;
+        const int shots = tower.shotsPerStep();
         for (int s = 0; s < shots; ++s) {
             Enemy* target = nullptr;
             for (Enemy& enemy : state_.enemies) {
-                if (enemy.health <= 0) continue;
-                if (!inRange(tower.position, state_.path[enemy.pathIndex], tower.range)) continue;
+                if (!enemy.isAlive()) continue;
+                if (!tower.isInRange(state_.path[enemy.pathIndex])) continue;
                 if (target == nullptr || enemy.pathIndex > target->pathIndex) target = &enemy;
             }
-            if (target != nullptr) target->health -= tower.damage;
+            if (target != nullptr) target->applyDamage(tower.damage);
         }
     }
 
+    // 4. Dead enemies give credits.
     std::vector<Enemy> alive;
     for (const Enemy& enemy : state_.enemies) {
-        if (enemy.health > 0) {
+        if (enemy.isAlive()) {
             alive.push_back(enemy);
         }
         else {
-            state_.credits += enemy.reward;
+            state_.addCredits(enemy.reward);
         }
     }
     state_.enemies = alive;
 
+    // 5. The wave is over when nobody is left to spawn or to kill.
     if (waveActive_ && enemiesToSpawn_ == 0 && state_.enemies.empty()) {
         waveActive_ = false;
         ++state_.wave;
@@ -186,7 +139,7 @@ void Engine::run() {
                 message = "Unknown command";
             }
 
-            if (state_.baseHealth <= 0) {
+            if (state_.isGameOver()) {
                 render();
                 renderer_.displayMessage("Game over: the server was destroyed");
                 running_ = false;

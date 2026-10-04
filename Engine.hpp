@@ -14,8 +14,6 @@ public:
     const GameState& getState() const;
 
 private:
-    bool isOnPath(Position position) const;
-    bool isOccupied(Position position) const;
     void render() const;
 
     GameState state_;

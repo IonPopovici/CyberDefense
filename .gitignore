@@ -1,3 +1,4 @@
+# Visual Studio temporary files & build output
 .vs/
 bin/
 obj/
@@ -12,6 +13,7 @@ Release/
 *.vcxproj*
 *.sln
 
+# Other IDEs & build output
 build/
 .idea/
 .vscode/
