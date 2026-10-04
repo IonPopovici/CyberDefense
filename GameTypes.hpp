@@ -2,6 +2,9 @@
 
 #include <vector>
 
+constexpr int kMapWidth = 10;
+constexpr int kMapHeight = 7;
+
 struct Position {
     int x{0};
     int y{0};
