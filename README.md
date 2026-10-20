@@ -64,3 +64,47 @@ cmake --build build
 ```
 
 În Visual Studio: `File > Open > Folder...` pe rădăcina proiectului — `CMakeLists.txt` este detectat automat.
+
+## Lab3 — Constructori și operatori
+
+Lab3 extinde versiunea actualizată a Lab2, păstrând regulile jocului.
+
+Pentru `Position`, `Tower`, `Enemy` și `GameState` sunt declarați și definiți:
+- constructor implicit, constructor de copiere și constructor cu parametri;
+- operator de atribuire `operator=` care returnează referința la obiect;
+- operatorii `==`, `!=`, `<`, `>`, `<=`, `>=`;
+- operatorii de flux `>>` și `<<` care permit înlănțuirea.
+
+Constructorul implicit, copierea și atribuirea folosesc `= default`: compilatorul copiază toate câmpurile, iar `std::vector` își copiază independent elementele. Autoatribuirea este sigură. Constructorii cu parametri folosesc liste de inițializare. Parametrii vectoriali ai `GameState` sunt primiți prin valoare și mutați în obiect.
+
+Egalitatea compară toate câmpurile. Ordinea este lexicografică, în ordinea declarării câmpurilor, pentru a permite utilizarea cu `std::sort` și containere ordonate. Această ordine descrie valorile obiectelor, nu prioritatea atacurilor din joc.
+
+### Formatul fluxurilor
+
+Datele sunt separate prin spații, fără mesaje interactive în operatori:
+- `Position`: `x y`;
+- `Tower`: `x y type damage range cost`, unde `type` este 0 (Basic), 1 (Fast), 2 (Heavy);
+- `Enemy`: `health speed reward pathIndex`;
+- `GameState`: `credits baseHealth wave`, apoi cele trei colecții (`path`, `towers`, `enemies`), fiecare precedată de numărul elementelor.
+
+Exemplu de turn Fast: `1 2 1 6 2 60`.
+
+`>>` citește într-un obiect temporar și actualizează destinația doar după succesul întregii operații. Intrările incomplete, tipurile de turn invalide și dimensiunile de colecții negative sau mai mari de 100000 setează `failbit`. Fluxurile reprezintă datele obiectului; verificarea pozițiilor admise pentru construirea unui turn rămâne în motorul jocului. `Listener::readPosition` utilizează acum operatorul `>>`.
+
+### Clasă abstractă pentru afișare
+
+`IRenderer` declară șase metode virtuale pure și un destructor virtual. `Renderer` moștenește această interfață și implementează metodele cu `override`. `Engine` utilizează o referință `IRenderer&`; implicit folosește afișarea în consolă, iar constructorul cu parametru permite injectarea altui renderer. Rendererul extern trebuie să existe pe toată durata utilizării motorului. Copierea motorului este dezactivată pentru a evita referințe către rendererul intern al altui obiect.
+
+### Compilare și verificare
+
+Din directorul proiectului, cu CMake și un compilator C++14:
+
+```sh
+cmake -S . -B build
+cmake --build build --config Debug
+ctest --test-dir build -C Debug --output-on-failure
+```
+
+Pe Windows, executabilul se află în `build/Debug/cyber_defense.exe`. Pe sistemele cu generator cu o singură configurație poate fi direct în `build/`.
+
+Testele din `tests/Lab3Tests.cpp` verifică semantica valorilor, serializarea, intrările invalide, compatibilitatea cu `std::sort`, moștenirea abstractă și un ciclu de joc. Verificat cu MSVC și CTest: toate testele au trecut.
