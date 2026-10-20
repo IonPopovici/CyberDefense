@@ -3,7 +3,6 @@
 #include <string>
 #include "GameTypes.hpp"
 
-// Common contract for console, graphical or test renderers.
 class IRenderer {
 public:
     virtual ~IRenderer() = default;

@@ -5,7 +5,6 @@
 #include <tuple>
 #include <utility>
 
-// ----- Position -----
 
 
 
@@ -19,7 +18,6 @@ int Position::distanceSquaredTo(const Position& other) const {
     return dx * dx + dy * dy;
 }
 
-// ----- Tower -----
 
 Tower Tower::create(TowerType type, Position position) {
     Tower tower;
@@ -54,7 +52,6 @@ int Tower::shotsPerStep() const {
     return (type == TowerType::Fast) ? 2 : 1;
 }
 
-// ----- Enemy -----
 
 Enemy Enemy::spawnForWave(int wave) {
     Enemy enemy;
@@ -79,7 +76,6 @@ bool Enemy::hasReachedEnd(int lastPathIndex) const {
     return pathIndex >= lastPathIndex;
 }
 
-// ----- GameState -----
 
 bool GameState::isPositionOnPath(const Position& position) const {
     for (const Position& p : path) {
@@ -111,7 +107,6 @@ bool GameState::isGameOver() const {
     return baseHealth <= 0;
 }
 
-// Value semantics: compare all fields in declaration order.
 Position::Position() = default;
 Position::Position(const Position& other) = default;
 Position::Position(int xValue, int yValue) : x(xValue), y(yValue) {}
@@ -126,7 +121,6 @@ bool Position::operator<(const Position& other) const {
 bool Position::operator>(const Position& other) const { return other < *this; }
 bool Position::operator<=(const Position& other) const { return !(other < *this); }
 bool Position::operator>=(const Position& other) const { return !(*this < other); }
-// Value semantics: compare all fields in declaration order.
 Tower::Tower() = default;
 Tower::Tower(const Tower& other) = default;
 Tower::Tower(Position positionValue, TowerType typeValue, int damageValue, int rangeValue, int costValue) : position(positionValue), type(typeValue), damage(damageValue), range(rangeValue), cost(costValue) {}
@@ -141,7 +135,6 @@ bool Tower::operator<(const Tower& other) const {
 bool Tower::operator>(const Tower& other) const { return other < *this; }
 bool Tower::operator<=(const Tower& other) const { return !(other < *this); }
 bool Tower::operator>=(const Tower& other) const { return !(*this < other); }
-// Value semantics: compare all fields in declaration order.
 Enemy::Enemy() = default;
 Enemy::Enemy(const Enemy& other) = default;
 Enemy::Enemy(int healthValue, int speedValue, int rewardValue, int pathIndexValue) : health(healthValue), speed(speedValue), reward(rewardValue), pathIndex(pathIndexValue) {}
@@ -156,7 +149,6 @@ bool Enemy::operator<(const Enemy& other) const {
 bool Enemy::operator>(const Enemy& other) const { return other < *this; }
 bool Enemy::operator<=(const Enemy& other) const { return !(other < *this); }
 bool Enemy::operator>=(const Enemy& other) const { return !(*this < other); }
-// Value semantics: compare all fields in declaration order.
 GameState::GameState() = default;
 GameState::GameState(const GameState& other) = default;
 GameState::GameState(int creditsValue, int baseHealthValue, int waveValue, std::vector<Position> pathValue, std::vector<Tower> towersValue, std::vector<Enemy> enemiesValue) : credits(creditsValue), baseHealth(baseHealthValue), wave(waveValue), path(std::move(pathValue)), towers(std::move(towersValue)), enemies(std::move(enemiesValue)) {}
@@ -171,7 +163,6 @@ bool GameState::operator<(const GameState& other) const {
 bool GameState::operator>(const GameState& other) const { return other < *this; }
 bool GameState::operator<=(const GameState& other) const { return !(other < *this); }
 bool GameState::operator>=(const GameState& other) const { return !(*this < other); }
-// Extraction uses a temporary so a failed read leaves the destination unchanged.
 std::ostream& operator<<(std::ostream& out, const Position& value) {
     return out << value.x << ' ' << value.y;
 }
@@ -207,7 +198,6 @@ std::istream& operator>>(std::istream& in, Enemy& value) {
 }
 
 namespace {
-// Bound collection sizes to avoid allocating arbitrarily large input payloads.
 constexpr long long kMaxStreamElements = 100000;
 template <typename T>
 std::istream& readVector(std::istream& in, std::vector<T>& values) {

@@ -94,7 +94,6 @@ int main() {
     CHECK(engine.startWave() && !engine.startWave());
     for (int i = 0; i < 20; ++i) engine.update();
     CHECK(engine.getState().wave == 2 && engine.getState().enemies.empty());
-    // Exercise run() through the abstract renderer, then restore the input stream.
     std::istringstream commands("q n");
     std::streambuf* original = std::cin.rdbuf(commands.rdbuf());
     engine.run();
