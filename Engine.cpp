@@ -37,7 +37,6 @@ bool Engine::startWave() {
 void Engine::update() {
     const int lastIndex = static_cast<int>(state_.path.size()) - 1;
 
-    // 1. Enemies move along the path; the ones that reach the server damage it.
     std::vector<Enemy> stillWalking;
     for (Enemy enemy : state_.enemies) {
         enemy.advance();
@@ -50,13 +49,11 @@ void Engine::update() {
     }
     state_.enemies = stillWalking;
 
-    // 2. The wave releases one new enemy per step.
     if (enemiesToSpawn_ > 0) {
         state_.enemies.push_back(Enemy::spawnForWave(state_.wave));
         --enemiesToSpawn_;
     }
 
-    // 3. Towers shoot the enemy closest to the server among those in range.
     for (const Tower& tower : state_.towers) {
         const int shots = tower.shotsPerStep();
         for (int s = 0; s < shots; ++s) {
@@ -70,7 +67,6 @@ void Engine::update() {
         }
     }
 
-    // 4. Dead enemies give credits.
     std::vector<Enemy> alive;
     for (const Enemy& enemy : state_.enemies) {
         if (enemy.isAlive()) {
@@ -82,7 +78,6 @@ void Engine::update() {
     }
     state_.enemies = alive;
 
-    // 5. The wave is over when nobody is left to spawn or to kill.
     if (waveActive_ && enemiesToSpawn_ == 0 && state_.enemies.empty()) {
         waveActive_ = false;
         ++state_.wave;

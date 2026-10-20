@@ -6,6 +6,11 @@
 
 class Engine {
 public:
+    Engine() : renderer_(defaultRenderer_) {}
+    explicit Engine(IRenderer& renderer) : renderer_(renderer) {}
+    Engine(const Engine&) = delete;
+    Engine& operator=(const Engine&) = delete;
+
     void start();
     void run();
     void update();
@@ -17,7 +22,8 @@ private:
     void render() const;
 
     GameState state_;
-    Renderer renderer_;
+    Renderer defaultRenderer_;
+    IRenderer& renderer_;
     Listener listener_;
     int enemiesToSpawn_{0};
     bool waveActive_{false};

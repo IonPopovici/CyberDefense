@@ -53,7 +53,7 @@ TowerType Listener::readTowerType() {
 Position Listener::readPosition() {
     Position position{-1, -1};
     std::cout << "Type with space the column and row (x y): ";
-    if (!(std::cin >> position.x >> position.y)) {
+    if (!(std::cin >> position)) {
         std::cin.clear();
         std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         return Position{-1, -1};

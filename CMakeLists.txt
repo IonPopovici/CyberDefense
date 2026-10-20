@@ -11,3 +11,10 @@ add_executable(cyber_defense
     Listener.cpp
     GameTypes.cpp
 )
+
+include(CTest)
+if(BUILD_TESTING)
+    add_executable(lab3_tests tests/Lab3Tests.cpp GameTypes.cpp Engine.cpp Renderer.cpp Listener.cpp)
+    target_include_directories(lab3_tests PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
+    add_test(NAME lab3_value_semantics COMMAND lab3_tests)
+endif()
