@@ -80,17 +80,13 @@ bool Enemy::hasReachedEnd(int lastPathIndex) const {
 
 
 bool GameState::isPositionOnPath(const Position& position) const {
-    for (const Position& p : path) {
-        if (p == position) return true;
-    }
-    return false;
+    return std::find(path.begin(), path.end(), position) != path.end();
 }
 
 bool GameState::isPositionOccupied(const Position& position) const {
-    for (const Tower& tower : towers) {
-        if (tower.position == position) return true;
-    }
-    return false;
+    return std::any_of(towers.begin(), towers.end(), [&position](const Tower& tower) {
+        return tower.position == position;
+    });
 }
 
 bool GameState::canAfford(int cost) const {
@@ -156,11 +152,20 @@ GameState::GameState(const GameState& other) = default;
 GameState::GameState(int creditsValue, int baseHealthValue, int waveValue, std::deque<Position> pathValue, std::deque<Tower> towersValue, std::deque<Enemy> enemiesValue) : credits(creditsValue), baseHealth(baseHealthValue), wave(waveValue), path(std::move(pathValue)), towers(std::move(towersValue)), enemies(std::move(enemiesValue)) {}
 GameState& GameState::operator=(const GameState& other) = default;
 bool GameState::operator==(const GameState& other) const {
-    return std::tie(credits, baseHealth, wave, path, towers, enemies) == std::tie(other.credits, other.baseHealth, other.wave, other.path, other.towers, other.enemies);
+    return credits == other.credits && baseHealth == other.baseHealth && wave == other.wave
+        && std::equal(path.begin(), path.end(), other.path.begin(), other.path.end())
+        && std::equal(towers.begin(), towers.end(), other.towers.begin(), other.towers.end())
+        && std::equal(enemies.begin(), enemies.end(), other.enemies.begin(), other.enemies.end());
 }
 bool GameState::operator!=(const GameState& other) const { return !(*this == other); }
 bool GameState::operator<(const GameState& other) const {
-    return std::tie(credits, baseHealth, wave, path, towers, enemies) < std::tie(other.credits, other.baseHealth, other.wave, other.path, other.towers, other.enemies);
+    if (std::tie(credits, baseHealth, wave) != std::tie(other.credits, other.baseHealth, other.wave))
+        return std::tie(credits, baseHealth, wave) < std::tie(other.credits, other.baseHealth, other.wave);
+    if (!std::equal(path.begin(), path.end(), other.path.begin(), other.path.end()))
+        return std::lexicographical_compare(path.begin(), path.end(), other.path.begin(), other.path.end());
+    if (!std::equal(towers.begin(), towers.end(), other.towers.begin(), other.towers.end()))
+        return std::lexicographical_compare(towers.begin(), towers.end(), other.towers.begin(), other.towers.end());
+    return std::lexicographical_compare(enemies.begin(), enemies.end(), other.enemies.begin(), other.enemies.end());
 }
 bool GameState::operator>(const GameState& other) const { return other < *this; }
 bool GameState::operator<=(const GameState& other) const { return !(other < *this); }

@@ -1,6 +1,7 @@
 #include "Engine.hpp"
 
 #include <algorithm>
+#include <iterator>
 #include <numeric>
 #include <string>
 
@@ -39,22 +40,24 @@ bool Engine::startWave() {
 void Engine::update() {
     const int lastIndex = static_cast<int>(state_.path.size()) - 1;
 
+    std::for_each(state_.enemies.begin(), state_.enemies.end(), [](Enemy& enemy) { enemy.advance(); });
+    state_.baseHealth -= static_cast<int>(std::count_if(state_.enemies.begin(), state_.enemies.end(), [lastIndex](const Enemy& enemy) {
+        return enemy.hasReachedEnd(lastIndex);
+    }));
     std::deque<Enemy> stillWalking;
-    for (Enemy enemy : state_.enemies) {
-        enemy.advance();
-        if (enemy.hasReachedEnd(lastIndex)) {
-            --state_.baseHealth;
-        }
-        else {
-            stillWalking.push_back(enemy);
-        }
-    }
+    std::copy_if(state_.enemies.begin(), state_.enemies.end(), std::back_inserter(stillWalking), [lastIndex](const Enemy& enemy) {
+        return !enemy.hasReachedEnd(lastIndex);
+    });
     state_.enemies = stillWalking;
 
     if (enemiesToSpawn_ > 0) {
         state_.enemies.push_back(Enemy::spawnForWave(state_.wave));
         --enemiesToSpawn_;
     }
+
+    std::stable_sort(state_.enemies.begin(), state_.enemies.end(), [](const Enemy& left, const Enemy& right) {
+        return left.pathIndex < right.pathIndex;
+    });
 
     for (const Tower& tower : state_.towers) {
         const int shots = tower.shotsPerStep();
