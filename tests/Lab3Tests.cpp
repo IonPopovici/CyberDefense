@@ -1,5 +1,7 @@
 #include "Engine.hpp"
 #include <algorithm>
+#include <array>
+#include <deque>
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
@@ -63,7 +65,7 @@ int main() {
     later.towers[0].damage = 99;
     later.enemies[0].health = 1;
     CHECK(state.path[0].x == 0 && state.towers[0].damage == 6 && state.enemies[0].health == 40);
-    for (const char* text : {"150 10 2 -1", "150 10 2 100001", "150 10 2 1 0", "150 10 2 0 0 1 40 1"}) {
+    for (const std::string& text : std::array<std::string, 4>{{"150 10 2 -1", "150 10 2 100001", "150 10 2 1 0", "150 10 2 0 0 1 40 1"}}) {
         GameState unchanged(state);
         std::istringstream input(text);
         input >> unchanged;
@@ -78,7 +80,7 @@ int main() {
     Position first, second;
     chain >> first >> second;
     CHECK(first == Position(1, 2) && second == Position(3, 4));
-    std::vector<Position> positions{second, first};
+    std::deque<Position> positions{second, first};
     std::sort(positions.begin(), positions.end());
     CHECK(positions.front() == first);
     CHECK(Tower::create(TowerType::Heavy, first).cost == 120);
@@ -101,3 +103,5 @@ int main() {
     CHECK(renderer.calls == 6);
     std::cout << "All Lab3 checks passed\n";
 }
+
+

@@ -108,3 +108,15 @@ ctest --test-dir build -C Debug --output-on-failure
 Pe Windows, executabilul se află în `build/Debug/cyber_defense.exe`. Pe sistemele cu generator cu o singură configurație poate fi direct în `build/`.
 
 Testele din `tests/Lab3Tests.cpp` verifică semantica valorilor, serializarea, intrările invalide, compatibilitatea cu `std::sort`, moștenirea abstractă și un ciclu de joc. Verificat cu MSVC și CTest: toate testele au trecut.
+
+## Lab4 — Utilizarea bibliotecii standarde C++
+
+Starea jocului folosește `std::deque` pentru traseu, turnuri și inamici; harta rendererului folosește `std::array`, iar mesajele și fluxurile folosesc `std::string` și operatorii de intrare/ieșire existenți. Căutarea pozițiilor folosește `std::find` și `std::any_of`, desenarea inițializează grila cu `std::fill`, iar ținta turnului este urmărită cu un iterator în locul unui pointer brut. Motorul folosește o referință la interfața abstractă `IRenderer`, fără alocare dinamică proprie.
+
+Proiectul se compilează cu CMake și C++14:
+
+```sh
+cmake -S . -B build
+cmake --build build --config Debug
+ctest --test-dir build -C Debug --output-on-failure
+```

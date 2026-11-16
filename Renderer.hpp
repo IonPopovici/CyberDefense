@@ -1,7 +1,7 @@
 #pragma once
 
 #include <string>
-#include <vector>
+#include <array>
 
 #include "IRenderer.hpp"
 
@@ -15,5 +15,6 @@ public:
     void displayMessage(const std::string& message) const override;
 
 private:
-    mutable std::vector<std::string> grid_;
+    mutable std::array<std::string, kMapHeight> grid_;
 };
+

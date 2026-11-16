@@ -1,5 +1,6 @@
 #include "Renderer.hpp"
 
+#include <algorithm>
 #include <cstdlib>
 #include <iostream>
 
@@ -12,7 +13,7 @@ void Renderer::clearScreen() const {
 }
 
 void Renderer::drawMap(const GameState& state) const {
-    grid_.assign(kMapHeight, std::string(kMapWidth, '.'));
+    std::fill(grid_.begin(), grid_.end(), std::string(kMapWidth, '.'));
 
     for (const Position& p : state.path) {
         grid_[p.y][p.x] = '#';
@@ -67,3 +68,4 @@ void Renderer::drawInterface(const GameState& state) const {
 void Renderer::displayMessage(const std::string& message) const {
     std::cout << message << std::endl;
 }
+
