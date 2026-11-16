@@ -1,5 +1,7 @@
 #include "Engine.hpp"
 
+#include <algorithm>
+#include <numeric>
 #include <string>
 
 void Engine::start() {
@@ -37,7 +39,7 @@ bool Engine::startWave() {
 void Engine::update() {
     const int lastIndex = static_cast<int>(state_.path.size()) - 1;
 
-    std::vector<Enemy> stillWalking;
+    std::deque<Enemy> stillWalking;
     for (Enemy enemy : state_.enemies) {
         enemy.advance();
         if (enemy.hasReachedEnd(lastIndex)) {
@@ -57,17 +59,17 @@ void Engine::update() {
     for (const Tower& tower : state_.towers) {
         const int shots = tower.shotsPerStep();
         for (int s = 0; s < shots; ++s) {
-            Enemy* target = nullptr;
-            for (Enemy& enemy : state_.enemies) {
-                if (!enemy.isAlive()) continue;
-                if (!tower.isInRange(state_.path[enemy.pathIndex])) continue;
-                if (target == nullptr || enemy.pathIndex > target->pathIndex) target = &enemy;
+            auto target = state_.enemies.end();
+            for (auto enemy = state_.enemies.begin(); enemy != state_.enemies.end(); ++enemy) {
+                if (!enemy->isAlive()) continue;
+                if (!tower.isInRange(state_.path[enemy->pathIndex])) continue;
+                if (target == state_.enemies.end() || enemy->pathIndex > target->pathIndex) target = enemy;
             }
-            if (target != nullptr) target->applyDamage(tower.damage);
+            if (target != state_.enemies.end()) target->applyDamage(tower.damage);
         }
     }
 
-    std::vector<Enemy> alive;
+    std::deque<Enemy> alive;
     for (const Enemy& enemy : state_.enemies) {
         if (enemy.isAlive()) {
             alive.push_back(enemy);
@@ -146,3 +148,4 @@ void Engine::run() {
 
     renderer_.displayMessage("\nThanks, bye");
 }
+

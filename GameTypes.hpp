@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <deque>
 #include <iosfwd>
 
 constexpr int kMapWidth = 10;
@@ -90,7 +90,7 @@ struct Enemy {
 struct GameState {
     GameState();
     GameState(const GameState& other);
-    GameState(int creditsValue, int baseHealthValue, int waveValue, std::vector<Position> pathValue, std::vector<Tower> towersValue, std::vector<Enemy> enemiesValue);
+    GameState(int creditsValue, int baseHealthValue, int waveValue, std::deque<Position> pathValue, std::deque<Tower> towersValue, std::deque<Enemy> enemiesValue);
     GameState& operator=(const GameState& other);
 
     bool operator==(const GameState& other) const;
@@ -105,9 +105,9 @@ struct GameState {
     int credits{100};
     int baseHealth{10};
     int wave{1};
-    std::vector<Position> path;
-    std::vector<Tower> towers;
-    std::vector<Enemy> enemies;
+    std::deque<Position> path;
+    std::deque<Tower> towers;
+    std::deque<Enemy> enemies;
 
     bool isPositionOnPath(const Position& position) const;
     bool isPositionOccupied(const Position& position) const;
@@ -116,3 +116,4 @@ struct GameState {
     void addCredits(int amount);
     bool isGameOver() const;
 };
+

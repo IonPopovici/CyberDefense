@@ -1,5 +1,7 @@
 #include "GameTypes.hpp"
 
+#include <algorithm>
+
 #include <istream>
 #include <ostream>
 #include <tuple>
@@ -151,7 +153,7 @@ bool Enemy::operator<=(const Enemy& other) const { return !(other < *this); }
 bool Enemy::operator>=(const Enemy& other) const { return !(*this < other); }
 GameState::GameState() = default;
 GameState::GameState(const GameState& other) = default;
-GameState::GameState(int creditsValue, int baseHealthValue, int waveValue, std::vector<Position> pathValue, std::vector<Tower> towersValue, std::vector<Enemy> enemiesValue) : credits(creditsValue), baseHealth(baseHealthValue), wave(waveValue), path(std::move(pathValue)), towers(std::move(towersValue)), enemies(std::move(enemiesValue)) {}
+GameState::GameState(int creditsValue, int baseHealthValue, int waveValue, std::deque<Position> pathValue, std::deque<Tower> towersValue, std::deque<Enemy> enemiesValue) : credits(creditsValue), baseHealth(baseHealthValue), wave(waveValue), path(std::move(pathValue)), towers(std::move(towersValue)), enemies(std::move(enemiesValue)) {}
 GameState& GameState::operator=(const GameState& other) = default;
 bool GameState::operator==(const GameState& other) const {
     return std::tie(credits, baseHealth, wave, path, towers, enemies) == std::tie(other.credits, other.baseHealth, other.wave, other.path, other.towers, other.enemies);
@@ -199,8 +201,8 @@ std::istream& operator>>(std::istream& in, Enemy& value) {
 
 namespace {
 constexpr long long kMaxStreamElements = 100000;
-template <typename T>
-std::istream& readVector(std::istream& in, std::vector<T>& values) {
+template <typename Container>
+std::istream& readVector(std::istream& in, Container& values) {
     long long count = 0;
     if (!(in >> count)) return in;
     if (count < 0 || count > kMaxStreamElements) {
@@ -208,16 +210,16 @@ std::istream& readVector(std::istream& in, std::vector<T>& values) {
         return in;
     }
     for (long long i = 0; i < count; ++i) {
-        T element;
+        typename Container::value_type element;
         if (!(in >> element)) return in;
         values.push_back(element);
     }
     return in;
 }
-template <typename T>
-void writeVector(std::ostream& out, const std::vector<T>& values) {
+template <typename Container>
+void writeVector(std::ostream& out, const Container& values) {
     out << ' ' << values.size();
-    for (const T& element : values) out << ' ' << element;
+    for (const auto& element : values) out << ' ' << element;
 }
 }
 std::ostream& operator<<(std::ostream& out, const GameState& value) {
@@ -236,3 +238,4 @@ std::istream& operator>>(std::istream& in, GameState& value) {
     }
     return in;
 }
+
