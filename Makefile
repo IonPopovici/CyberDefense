@@ -1,22 +1,19 @@
-CXX := g++
-CXXFLAGS := -std=c++14 -Wall -Wextra -pedantic
-TARGET := cyber_defense
+.PHONY: all configure run test clean
+BUILD_DIR ?= build
+CMAKE ?= cmake
 
-SOURCES := main.cpp Engine.cpp Renderer.cpp Listener.cpp GameTypes.cpp
-OBJECTS := $(SOURCES:.cpp=.o)
+all: configure
+	$(CMAKE) --build $(BUILD_DIR) --config Release
 
-.PHONY: all clean run
-
-all: $(TARGET)
-
-$(TARGET): $(OBJECTS)
-	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $(TARGET)
-
-%.o: %.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+configure:
+	$(CMAKE) -S . -B $(BUILD_DIR) -DCMAKE_BUILD_TYPE=Release
 
 run: all
-	./$(TARGET)
+	./$(BUILD_DIR)/cyber_defense
+
+test: configure
+	$(CMAKE) --build $(BUILD_DIR) --config Debug
+	ctest --test-dir $(BUILD_DIR) -C Debug --output-on-failure
 
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	$(CMAKE) -E rm -rf $(BUILD_DIR)

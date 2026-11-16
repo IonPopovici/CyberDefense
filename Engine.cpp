@@ -1,4 +1,5 @@
 #include "Engine.hpp"
+#include "SaveSystem.hpp"
 
 #include <algorithm>
 #include <numeric>
@@ -10,6 +11,9 @@ void Engine::start() {
     for (int x = 0; x <= 4; ++x) state_.path.push_back({ x, 1 });
     for (int y = 2; y <= 5; ++y) state_.path.push_back({ 4, y });
     for (int x = 5; x < kMapWidth; ++x) state_.path.push_back({ x, 5 });
+
+    GameState saved;
+    if (SaveSystem::load(saved, "cyber_defense_save.json")) state_ = saved;
 
     enemiesToSpawn_ = 0;
     waveActive_ = false;
@@ -115,6 +119,8 @@ void Engine::run() {
             listener_.readInput();
 
             if (listener_.wantsToQuit()) {
+                if (!SaveSystem::save(state_, "cyber_defense_save.json"))
+                    renderer_.displayMessage("Could not save game state");
                 running_ = false;
             }
             else if (listener_.wantsToBuildTower()) {
