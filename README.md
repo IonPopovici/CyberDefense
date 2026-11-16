@@ -120,3 +120,17 @@ cmake -S . -B build
 cmake --build build --config Debug
 ctest --test-dir build -C Debug --output-on-failure
 ```
+
+## Lab5: Libraries
+
+The data structures and their operators are compiled into the `game_data` static library. JSON save and load support lives in the separate `game_persistence` static library, which uses the external `nlohmann/json` library fetched by CMake. The game saves its state to `cyber_defense_save.json` when quitting and restores it when a new session starts.
+
+Configure and build with CMake:
+
+```sh
+cmake -S . -B build
+cmake --build build --config Release
+ctest --test-dir build -C Debug --output-on-failure
+```
+
+The Makefile wraps the CMake configure, build, test, run, and clean targets.
